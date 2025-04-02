@@ -16,6 +16,8 @@ const Authorization = (req, res, next) => {
       } else {
         req.body.objectId = decoded.payload.objectId;
         req.body.role = decoded.payload.role;
+        req.user = {};
+        req.user.objectId = decoded.payload.objectId;
         next();
       }
     }

@@ -9,6 +9,9 @@ export default function Information() {
   const [email, setEmail] = useState(null);
   const [phone, setPhone] = useState(null);
   const [point, setPoint] = useState(null);
+  const [profilePic, setprofilePic] = useState(null);
+
+  const [uploadFileName, setUploadFileName] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editField, setEditField] = useState(null);
@@ -29,6 +32,8 @@ export default function Information() {
         ? email
         : field === "phone"
         ? phone
+        : field === "profilePic"
+        ? profilePic
         : ""
     );
     setIsModalOpen(true);
@@ -37,18 +42,54 @@ export default function Information() {
   const handleSave = async () => {
     const token = localStorage.getItem("token");
 
-    console.log(editValue, editField);
+    const formData = new FormData();
+
+    // Append the edit field and value
+    formData.append("editField", editField);
+
+    // Handle profilePic
+    if (editField === "profilePic") {
+      const fileInput = document.getElementById("file-upload");
+      const file = fileInput?.files[0]; // Get the selected file, if any
+
+      if (file) {
+        // Case 1: File upload
+        formData.append("profilePic", file); // Append the file to FormData
+        setEditValue(file.name); // Set editValue to the file name
+      } else if (
+        editValue &&
+        typeof editValue === "string" &&
+        editValue.startsWith("http")
+      ) {
+        // Case 2: URL input (assuming editValue comes from a text input)
+        formData.append("profilePic", editValue); // Send the URL as a string
+        // editValue is already set from the text input, no need to update it here
+      } else {
+        console.log(
+          "No file selected and no valid URL provided for profilePic"
+        );
+        return; // Optionally prevent saving if neither is provided
+      }
+    } else {
+      // Non-profilePic fields
+      formData.append("editValue", editValue);
+      // console.log("editValue for non-file field:", editValue);
+    }
+
+    // Log FormData contents for debugging (note: FormData logging is tricky)
+    for (let [key, value] of formData.entries()) {
+      console.log(`${key}: ${value}`);
+    }
+
+    // console.log(editValue, editField);
+
     try {
       const res = await fetch("http://localhost:3030/member/edit", {
         method: "POST",
         headers: {
-          "Content-type": "application/json",
           authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          editField,
-          editValue,
-        }),
+        body: formData,
       });
 
       if (!res.ok) {
@@ -65,6 +106,8 @@ export default function Information() {
         ? setEmail(editValue)
         : editField === "phone"
         ? setPhone(editValue)
+        : editField === "profilePic"
+        ? setprofilePic(editValue)
         : "";
     } catch (err) {
       console.log(err.message);
@@ -140,6 +183,36 @@ export default function Information() {
             placeholder="Enter your phone number"
           />
         );
+      case "profilePic":
+        return (
+          <>
+            <div>
+              <p>Enter a link or upload an image file:</p>
+            </div>
+            <input
+              type="string"
+              value={editValue || ""}
+              onChange={(e) => setEditValue(e.target.value)}
+              className="input input-bordered w-full"
+              placeholder="Enter the URL"
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  setEditValue(file.name); // Preview the image
+                }
+              }}
+              className="hidden" // Hide the file input
+              id="file-upload" // Assign an ID for the label
+            />
+            <label htmlFor="file-upload" className="btn input-bordered w-full">
+              Upload Image
+            </label>
+          </>
+        );
       default:
         return null;
     }
@@ -173,6 +246,8 @@ export default function Information() {
         setEmail(data.email);
         setPhone(data.phone);
         setPoint(data.point);
+        setprofilePic(data.avatar);
+
         setIsLoading(false);
       } catch (err) {
         console.log(err.message);
@@ -193,8 +268,11 @@ export default function Information() {
             <h2 className="text-xl font-semibold mb-6">Basic Information</h2>
             <div className="flex items-center justify-center mb-4 p-4 border-b-2 border-gray-300">
               <div className="avatar">
-                <div className="w-24 rounded-full">
-                  <img src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
+                <div
+                  className="w-24 rounded-full hover:cursor-pointer"
+                  onClick={() => handleEdit("profilePic")}
+                >
+                  <img src={profilePic || null} />
                 </div>
               </div>
             </div>
