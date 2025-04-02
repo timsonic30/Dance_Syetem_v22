@@ -5,6 +5,7 @@ require("dotenv").config();
 
 const transporter = require("../config/googleOAuth2Client");
 const Member = require("../models/member");
+
 const private_key =
   process.env.JWT_SECRET || "KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp";
 
@@ -76,6 +77,16 @@ router.get("/send", async (req, res, next) => {
   }
 });
 
+const deleteRegistration = async (email) => {
+  try {
+    await Member.deleteOne({ email: email });
+    return true;
+  } catch (error) {
+    console.log(error);
+    return false;
+  }
+};
+
 router.get("/verification/:token", async (req, res, next) => {
   const { token } = req.params;
   console.log(token);
@@ -84,6 +95,9 @@ router.get("/verification/:token", async (req, res, next) => {
     const decoded = await new Promise((resolve, reject) => {
       jwt.verify(token, private_key, (error, decoded) => {
         if (error) {
+          const decodedEmail = jwt.decode(token).payload.email;
+          console.log(decodedEmail);
+          deleteRegistration(decodedEmail);
           return reject(error);
         }
         resolve(decoded);

@@ -107,6 +107,7 @@ export default function Register() {
         } else {
           console.log("Registration successful:", data.message);
           setIsSubmit(true);
+          // setShowAlert(true);
           setTimeout(() => {
             router.push("/login");
           }, 1500);
@@ -136,6 +137,13 @@ export default function Register() {
     window.location.href = "http://localhost:3030/auth/auth";
   };
 
+  // Function to handle alert confirmation
+  const [showAlert, setShowAlert] = useState(false); // Alert state
+  const handleAlertConfirm = () => {
+    setShowAlert(false); // Hide alert
+    router.push("/login"); // Redirect after confirmation
+  };
+
   return (
     <div>
       <div className="flex flex-col justify-center items-center">
@@ -144,8 +152,33 @@ export default function Register() {
             Become a member now
           </h1>
 
-          {/* Facebook */}
-          <div className="mb-2">
+          {/* Alert component */}
+          {/* {showAlert && (
+            <div role="alert" className="alert alert-success">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span>
+                Your registration was successful! Please verify your email.
+              </span>
+              <button onClick={handleAlertConfirm} className="btn">
+                OK
+              </button>
+            </div>
+          )} */}
+
+          {/* Facebook -> not enough time*/}
+          {/* <div className="mb-2">
             <button className="btn bg-white text-black border-[#e5e5e5] w-full">
               <svg
                 aria-label="Facebook logo"
@@ -161,7 +194,7 @@ export default function Register() {
               </svg>
               Log in with Facebook
             </button>
-          </div>
+          </div> */}
           {/* Google */}
           <div className="mb-3">
             <button
