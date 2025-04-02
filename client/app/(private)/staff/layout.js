@@ -4,7 +4,7 @@ import Image from "next/image";
 
 const navigationItems = [
   {
-    path: "/staff/profile",
+    path: "/staff/information",
     image: (
       <Image src="/Male User.png" alt="User icon" width={18} height={18} />
     ),
@@ -32,7 +32,12 @@ const navigationItems = [
   {
     path: "/staff/AllClassList",
     image: (
-      <Image src="/Edit Property.png" alt="Fat Female icon" width={18} height={18} />
+      <Image
+        src="/Edit Property.png"
+        alt="Fat Female icon"
+        width={18}
+        height={18}
+      />
     ),
     label: "All Class List",
   },
@@ -55,7 +60,6 @@ const navigationItems = [
     ),
     label: "Competitions Registered",
   },
- 
 ];
 
 export default function StaffLayout({ children }) {

@@ -84,6 +84,69 @@
   text-decoration: none; /* Remove default link underline */
 }
 
+/* General styling for text input fields */
+.LCA-crewName,
+.LCA-contactName,
+.LCA-contactNumber,
+.LCA-instagram,
+.LCA-category,
+.LCA-teamMembers {
+  max-width: 150px; /* Limit the width of the input fields */
+  width: 100%; /* Responsive width */
+  padding: 8px; /* Add padding for better user experience */
+  margin: 5px 0; /* Space between fields */
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 14px; /* Standard font size for readability */
+  box-sizing: border-box; /* Includes padding and border in width */
+}
+
+/* Focus effect for all text input fields */
+.LCA-crewName:focus,
+.LCA-contactName:focus,
+.LCA-contactNumber:focus,
+.LCA-instagram:focus,
+.LCA-category:focus,
+.LCA-teamMembers:focus {
+  outline: none; /* Remove default browser outline */
+  border-color: orange; /* Change border color to blue */
+  box-shadow: 0 0 5px rgba(255, 183, 0, 0.5); /* Add glowing blue effect */
+}
+
+/* Styling for file input field */
+.LCA-transactionSlip {
+  max-width: 150px; /* Limit the width */
+  width: 100%;
+  padding: 8px; /* Add padding for uniform styling */
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Focus effect for file input field */
+.LCA-transactionSlip:focus {
+  outline: none;
+  border-color: orange;
+  box-shadow: 0 0 5px rgba(255, 170, 0, 0.5);
+}
+
+/* Styling for error messages */
+.LCA-error-message {
+  color: #ff4d4d; /* Red color for error text */
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* Styling for success messages */
+.LCA-success-message {
+  color: #28a745; /* Green color for success text */
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+
 
 /* Responsive Design */
 @media (max-width: 768px) {

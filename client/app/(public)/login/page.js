@@ -67,7 +67,7 @@ export default function Login() {
               }, 100);
             } else if (data.role === "teacher")
               router.push("/teacher/information");
-            else if (data.role === "staff") router.push("/staff/profile");
+            else if (data.role === "staff") router.push("/staff/information");
           }
         } else {
           setPasswordErr("Wrong Password");
