@@ -13,37 +13,41 @@ export default function ShoppingCart() {
 
   //======如果不是會員, 讓會員記著這個位置=========
   const loginNotYet = () => {
+    alert("請先登入");
     // 保存當前頁面的URL
     const currentPageUrl = window.location.href;
-    sessionStorage.setItem('redirectAfterRegister', currentPageUrl);
-    window.location.href = 'http://localhost:3000/login';
-  }
+    sessionStorage.setItem("redirectAfterRegister", currentPageUrl);
+    window.location.href = "http://localhost:3000/login";
+  };
 
   //=====如有token,將token send to backend, 找出會員objectID==================
   const sendTokenToBackEnd = async (token) => {
     // 呼叫 API
     try {
-      const response = await fetch("http://localhost:3030/shoppingCart/tokenGetMember", {
-        method: "POST", // 或根據 API 需求使用 POST 等
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // 使用 Token 作為 Authorization
-        },
-      });
+      const response = await fetch(
+        "http://localhost:3030/shoppingCart/tokenGetMember",
+        {
+          method: "POST", // 或根據 API 需求使用 POST 等
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // 使用 Token 作為 Authorization
+          },
+        }
+      );
       if (response.ok) {
         const data = await response.json(); // 如果 API 返回 JSON
         //console.log("API 回應資料:", data);
-        alert("API 呼叫成功！");
-        return data.objectId
+        //alert("API 呼叫成功！");
+        return data.objectId;
       } else {
         console.error("API 呼叫失敗:", response.status, response.statusText);
-        alert("API 呼叫失敗，請檢查伺服器！");
+        //alert("API 呼叫失敗，請檢查伺服器！");
       }
     } catch (error) {
       console.error("發生錯誤:", error);
-      alert("無法連接到 API，請稍後再試！");
+      //alert("無法連接到 API，請稍後再試！");
     }
-  }
+  };
   //========================
 
   //==========查看是不是已login========================
@@ -52,11 +56,13 @@ export default function ShoppingCart() {
     const token = localStorage.getItem("token");
     if (token) {
       console.log("Token 存在:", token);
-      alert("Token 存在！");
+      //alert("Token 存在！");
       let userid = await sendTokenToBackEnd(token);
-      return userid //確認了是會員及將會員的ObjectID抽出來
+      return userid; //確認了是會員及將會員的ObjectID抽出來
     } else {
-      loginNotYet()
+      //alert("沒有token");
+      loginNotYet();
+      return false;
     }
   };
   //======================================
@@ -90,8 +96,9 @@ export default function ShoppingCart() {
   const totalPrices = (resultArray) => {
     let total = 0;
     resultArray.map((item) => {
-      console.log("item:", item.data[0].price);
-      total += item.data[0].price;
+      const price = item.data[0].price;
+      console.log("item:", price);
+      total += price;
     });
     setTotal(total);
     return total;
@@ -217,23 +224,23 @@ export default function ShoppingCart() {
     }
   };
 
-//=====將有關shoppingcart的data從server端取回====
-const afterCheckOut = () => {
-  // 清除 Cookie
-  document.cookie = "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-  // 顯示提示
-  alert("session_id 已清除");
-  
-  // 使用 window.dispatchEvent 觸發一個自定義事件,讓navbar上的icon更新
-  const event = new CustomEvent("userAddedCart", {
-    detail: { message: "refresh shopping Cart length" },
-  });
-  window.dispatchEvent(event);
-  // 跳轉到指定頁面
-  window.location.href = "http://localhost:3000/member/information";
-};
-//==============================
+  //=====將有關shoppingcart的data從server端取回====
+  const isMemberAfterCheckOut = () => {
+    // 清除 Cookie
+    document.cookie =
+      "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    // 顯示提示
+    //alert("session_id 已清除");
 
+    // 使用 window.dispatchEvent 觸發一個自定義事件,讓navbar上的icon更新
+    const event = new CustomEvent("userAddedCart", {
+      detail: { message: "refresh shopping Cart length" },
+    });
+    window.dispatchEvent(event);
+    // 跳轉到指定頁面
+    window.location.href = "http://localhost:3000/member/information";
+  };
+  //==============================
 
   //===將資料送到後端=====
   const sendTransactionData = async (data) => {
@@ -250,23 +257,22 @@ const afterCheckOut = () => {
       if (response.ok) {
         const responseData = await response.json();
         console.log("交易成功回應:", responseData);
-        alert("====交易資料已送出並成功處理！===");
-        // document.cookie = "session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-        // alert("session_id 已清除");        
+        //alert("====交易資料已送出並成功處理！===");
       } else {
         console.error("交易失敗:", response.status, response.statusText);
-        alert("交易失敗，請稍後再試！");
+        //alert("交易失敗，請稍後再試！");
       }
     } catch (error) {
       console.error("連接錯誤:", error);
-      alert("無法連接到伺服器！");
+      //alert("無法連接到伺服器！");
     }
   };
   //=============================
 
   //===綜合shopping cart及user資料, 準備送到後端====
   const processTransactions = async (cartData, userId) => {
-    const promises = cartData.map(item => {
+    //console.log(cartData);
+    const promises = cartData.map((item) => {
       const data = {
         userId: userId,
         status: "Pending Payment",
@@ -277,14 +283,14 @@ const afterCheckOut = () => {
       return sendTransactionData(data);
     });
 
-    await Promise.all(promises)
+    await Promise.all(promises);
   };
   //========================================
 
   //===========================================
   //找出現時在購物車的商品 - 其實已經有, 不需要, ****你現在需要的是將啲item發送到transaction的collection中
   // const findShoppingCart = () => {
-  //   const token = localStorage.getItem("token"); //為什麼要獲取token  
+  //   const token = localStorage.getItem("token"); //為什麼要獲取token
   //   fetch("http://localhost:3030/shoppingcart/getcart", {
   //     method: "GET",
   //     headers: {
@@ -312,22 +318,21 @@ const afterCheckOut = () => {
   //==========================================================
   // 埋單按鈕
   const handleCheckOut = async () => {
-    alert("You Clicked Check Out");
+    //alert("You Clicked Check Out");
     // 「cartData」是購物車的所有資料,是array
     let userId = await checkMenberOrNot();
+    if (!userId) {
+      return;
+    }
     await processTransactions(cartData, userId);
     //清理有關cookie
-    afterCheckOut();
+    isMemberAfterCheckOut();
   };
   //====================================
-
 
   useEffect(() => {
     checkShoppingCart();
   }, []);
-
-
-
 
   return (
     <div className="max-w-3xl mx-auto bg-white rounded-lg border border-gray-400 shadow-lg py-14 px-20 mt-16 w-full">
