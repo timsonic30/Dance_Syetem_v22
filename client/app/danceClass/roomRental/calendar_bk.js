@@ -28,7 +28,6 @@ export default function Calendar({
   onTimeSelect,
   className,
 }) {
-  const [cartCount, setCartCount] = useState();
   const [selectedTimes, setSelectedTimes] = useState([]); // 使用陣列儲存多個選中的時間
   const [currentDate, setCurrentDate] = useState(new Date());
   const [clickedDate, setClickedDate] = useState(new Date()); // 初始化為今天的日期
@@ -101,86 +100,6 @@ export default function Calendar({
     const month = String(date.getMonth() + 1).padStart(2, "0");
     const year = date.getFullYear();
     return `${dayOfWeek}— ${day}/${month}/${year}`;
-  };
-
-  const generateSessionId = () => {
-    // 使用隨機數生成唯一的 Session ID
-    return (
-      "session-" + Math.random().toString(36).substr(2, 9) + "-" + Date.now()
-    );
-  };
-
-  const checkShoppingCart = () => {
-    // 檢查是否已經有 Session ID
-    let sessionId = Cookies.get("session_id");
-
-    if (sessionId) {
-      // 如果有，則獲取購物車內容
-      fetch(`http://localhost:3030/shoppingCart/getcart/${sessionId}`)
-        .then((response) => {
-          if (response.ok) {
-            return response.json();
-          } else {
-            throw new Error("獲取購物車失敗");
-          }
-        })
-        .then((data) => {
-          Cookies.set("shoppinglength", length);
-          setCartCount(data.length);
-        })
-        .catch((error) => {
-          console.error("錯誤：", error);
-          // 處理錯誤（如顯示錯誤訊息）
-        });
-    }
-  };
-
-  const handleAddToCart = (id, classprice) => {
-    // 檢查是否已經有 Session ID
-    let sessionId = Cookies.get("session_id");
-    if (!sessionId) {
-      // 如果沒有，則生成新的 Session ID 並存儲
-      sessionId = generateSessionId();
-      Cookies.set("session_id", sessionId);
-    }
-    //將資料存入購物車DB
-    fetch("http://localhost:3030/shoppingCart/addtocart", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json", // 設置內容類型為 JSON
-      },
-      body: JSON.stringify({
-        productID: id,
-        collectionName: "roomrentals",
-        price: classprice,
-        shoppingType: "room rental",
-        sessionID: sessionId, // 傳送 Session ID
-      }),
-    })
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          throw new Error("預訂課室失敗");
-        }
-      })
-      .then((data) => {
-        console.log("預訂成功：", data);
-        // 成功後處理邏輯（如顯示成功訊息或更新畫面）
-        alert("已加購物車！");
-        checkShoppingCart(); // 確保更新購物車內容
-        //=======================
-        // 使用 window.dispatchEvent 觸發一個自定義事件
-        const event = new CustomEvent("userAddedCart", {
-          detail: { message: "refresh shopping Cart length" },
-        });
-        window.dispatchEvent(event);
-        //=========================
-      })
-      .catch((error) => {
-        console.error("錯誤：", error);
-        // 處理錯誤（如顯示錯誤訊息）
-      });
   };
 
   const handleDateClick = (day) => {
@@ -301,12 +220,11 @@ export default function Calendar({
       alert("Please select time");
       return;
     }
-    const price = selectedRoom === "Room XL" ? 250 : 100;
+
     const queryParams = {
       date: formattedDate, // 使用調整後的日期
       TimeRanges: selectedTimes,
       room: selectedRoom,
-      price: price,
     };
 
     if (!token) {
@@ -336,12 +254,11 @@ export default function Calendar({
       if (response.ok) {
         const data = await response.json();
         console.log("Server Response:", data);
-        //當資料回傳過來時, 將訂購資料放入購物車
-        const price = selectedRoom === "Room XL" ? 250 : 100;
-        await handleAddToCart(data.data._id, price);
-
-        //alert("場地已預訂！");
-        window.location.reload();
+        alert("場地已預訂！");
+        console.log(data.data._id);
+        //加data.data._id
+        //去搵add to cart
+        //window.location.reload();
       } else {
         console.error("後端返回錯誤:", response.status);
         alert("資料送達失敗！");

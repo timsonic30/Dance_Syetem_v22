@@ -12,7 +12,15 @@ export default function TimePicker({
 
   // 自訂日期格式化
   const formatDate = (date) => {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
     const dayOfWeek = days[date.getDay()];
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0"); // 月份從 0 開始
@@ -26,7 +34,9 @@ export default function TimePicker({
     for (let hour = 9; hour < 22; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         slots.push(
-          `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`
+          `${hour.toString().padStart(2, "0")}:${minute
+            .toString()
+            .padStart(2, "0")}`
         );
       }
     }
@@ -36,7 +46,9 @@ export default function TimePicker({
   const timeSlots = generateTimeSlots();
 
   // 過濾掉不需要顯示的時間
-  const filteredTimeSlots = timeSlots.filter((time) => !excludedTimes.includes(time));
+  const filteredTimeSlots = timeSlots.filter(
+    (time) => !excludedTimes.includes(time)
+  );
 
   const handleTimeSelect = (time) => {
     setSelectedTime(time);
