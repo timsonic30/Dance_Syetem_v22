@@ -41,8 +41,6 @@ router.get("/recordDetail/:collectionName", async (req, res) => {
   }
 });
 
-//==========================================
-
 //====將有關這個userId的用戶的交易data找出來
 router.get("/purchaseRecord/:userId", async (req, res) => {
   try {
@@ -66,7 +64,32 @@ router.get("/purchaseRecord/:userId", async (req, res) => {
     res.status(500).send({ error: "伺服器錯誤，無法獲取購買記錄" });
   }
 });
+//==============================
 
+//==========================================
+
+// 從前端來的資料, 根據ID刪除danceClass collection中的資料
+router.delete("/purchaseHistory/:id", async (req, res, next) => {
+  const { id } = req.params;
+  console.log(`刪除課程 ID: ${id}`);
+
+  try {
+    const deletedClass = await Transaction.findByIdAndDelete({ _id: id });
+    if (!deletedClass) {
+      return res
+        .status(404)
+        .send({ response: "error", message: "Class not found" });
+    }
+    console.log("刪除成功, 資料是:");
+    console.log(deletedClass);
+    res.send({ response: "ok", deletedClass });
+  } catch (error) {
+    console.error("刪除課程時發生錯誤:", error);
+    res
+      .status(500)
+      .send({ response: "error", message: "Failed to delete class" });
+  }
+});
 //==============================
 
 //將shoppingCart傳來的資料傳入transaction的collection

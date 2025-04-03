@@ -94,14 +94,18 @@ router.delete("/classDelete/:id", async (req, res, next) => {
   try {
     const deletedClass = await DanceClass.findByIdAndDelete(id);
     if (!deletedClass) {
-      return res.status(404).send({ response: "error", message: "Class not found" });
+      return res
+        .status(404)
+        .send({ response: "error", message: "Class not found" });
     }
     console.log("刪除成功, 資料是:");
     console.log(deletedClass);
     res.send({ response: "ok", deletedClass });
   } catch (error) {
     console.error("刪除課程時發生錯誤:", error);
-    res.status(500).send({ response: "error", message: "Failed to delete class" });
+    res
+      .status(500)
+      .send({ response: "error", message: "Failed to delete class" });
   }
 });
 
@@ -115,35 +119,32 @@ router.put("/classEdit/:id", async (req, res, next) => {
 
   // 檢查是否提供更新資料
   if (!updatedData || Object.keys(updatedData).length === 0) {
-      return res.status(400).json({ success: false, message: "缺少更新資料" });
+    return res.status(400).json({ success: false, message: "缺少更新資料" });
   }
 
   // 檢查 ID 格式是否正確
   if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "無效的課程 ID" });
+    return res.status(400).json({ success: false, message: "無效的課程 ID" });
   }
 
   try {
-      const updatedClass = await DanceClass.findByIdAndUpdate(id, updatedData, {
-          new: true,
-          runValidators: true,
-          returnDocument: "after",
-      });
+    const updatedClass = await DanceClass.findByIdAndUpdate(id, updatedData, {
+      new: true,
+      runValidators: true,
+      returnDocument: "after",
+    });
 
-      if (!updatedClass) {
-          return res.status(404).json({ success: false, message: "課程未找到" });
-      }
+    if (!updatedClass) {
+      return res.status(404).json({ success: false, message: "課程未找到" });
+    }
 
-      console.log("課程更新成功:", updatedClass);
-      res.status(200).json({ success: true, updatedClass });
+    console.log("課程更新成功:", updatedClass);
+    res.status(200).json({ success: true, updatedClass });
   } catch (error) {
-      console.error("更新課程時發生錯誤:", error);
-      res.status(500).json({ success: false, message: "伺服器錯誤，更新失敗" });
+    console.error("更新課程時發生錯誤:", error);
+    res.status(500).json({ success: false, message: "伺服器錯誤，更新失敗" });
   }
 });
-
-
-
 
 //======20250314=15:00=取出DB的schema做form==========
 router.get("/teacherDataEntry", (req, res, next) => {
@@ -238,17 +239,18 @@ router.get("/transaction/:userId", async (req, res, next) => {
 //=============room rental飛過來的data, 將data加入db裡面
 router.post("/roomRentalRegister", Authorization, async (req, res) => {
   try {
-    const { date, TimeRanges, room, objectId } = req.body;
+    const { date, TimeRanges, room, objectId, price } = req.body;
 
     // 構造要保存的資料
     const rentalData = {
       roomType: room,
       date: date,
       userID: objectId,
-      contactPerson: "alpha123", //可以不要的, 如要就要在前端加入input
-      contactEmail: "beta456@example.com", //可以不要的, 如要就要在前端加入input
+      contactPerson: "MsChan", //可以不要的, 如要就要在前端加入input
+      contactEmail: "xx@X.com", //可以不要的, 如要就要在前端加入input
       timeRange: TimeRanges,
       rentalType: "Class",
+      price: price,
     };
 
     // 將資料保存到資料庫
