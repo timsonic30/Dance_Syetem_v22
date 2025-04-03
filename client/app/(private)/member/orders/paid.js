@@ -1,73 +1,144 @@
+import React, { useState, useEffect } from "react";
+
 export default function Paid({ data }) {
-  const handleDeleteTransactionRec = async (id) => {
-    console.log(id);
+  const [htmlContentData, sethtmlContentData] = useState([]); // 主數據
+
+  //delete purchase History的按鈕
+  const handleDelete = async (transactionsObjectId) => {
+    const url = `http://localhost:3030/transaction/purchaseHistory/${transactionsObjectId}`;
     try {
-      // 發送刪除請求
-      const response = await fetch(
-        `http://localhost:3030/danceclass/transactionDelete/${id}`,
-        { method: "DELETE" }
-      ); // 使用 DELETE 方法
-      const resData = await response.json();
-      console.log("刪除結果:", resData); // 確認刪除結果
-      if (resData.response !== "ok") {
-        console.error("刪除失敗:", resData);
-        return;
+      const response = await fetch(url, {
+        method: "DELETE", // 使用 HTTP DELETE 方法
+        headers: {
+          "Content-Type": "application/json", // 告知伺服器數據格式為 JSON
+        },
+      });
+
+      if (response.ok) {
+        //alert("成功刪除");
+        window.location.reload(); // 強制刷新頁面
       } else {
-        console.log("刪除成功:", resData);
-        // 刷新頁面 (重新抓取數據)
-        window.location.reload();
+        console.log(`Failed to delete transaction. Status: ${response.status}`);
       }
-    } catch (err) {
-      console.error("刪除失敗:", err);
+    } catch (error) {
+      console.log("Error occurred while deleting transaction:", error);
     }
   };
+  //=======================================
 
-  const renderHtml = () => {
-    if (!data || !Array.isArray(data)) {
-      console.log("數據無效或為空");
-      return <p>No data available</p>;
-    }
+  // 定義 type 的映射
+  const typeMap = {
+    Class: "DanceClass",
+    "Room Rental": "RoomRental",
+    Package: "payProduct",
+    Tee: "payProduct",
+    class: "DanceClass",
+    "room rental": "RoomRental",
+    package: "payProduct",
+    tee: "payProduct",
+  };
 
-    // 遍歷數據，並添加條件渲染
-    return data.map(
-      (item) =>
-        item.status === "Paid" && (
-          <div
-            className="flex items-center justify-between py-3"
-            key={item._id}
-          >
-            {/* 顯示課程類型 */}
-            <div className="text-sm font-medium text-gray-600">
-              {item.classData.code} -
-              <span className="text-sm text-gray-800">
-                {" "}
-                {item.classData.style}
-              </span>
-            </div>
+  // 整理要向不同 collection fetch 的資料
+  const htmlContent = data.transactions.map((item) => {
+    const collectionName = typeMap[item.type] || "DefaultValue";
+    item.fetchUrl = `http://localhost:3030/transaction/recordDetail/${collectionName}?detail=${item.detail}`;
+    return item;
+  });
 
-            <div className="flex items-center gap-4">
-              {/* 顯示課程價格 */}
-              <span className="text-sm text-gray-800">HK${item.price}</span>
+  const fetchData = async () => {
+    const finalHtmlContent = await Promise.all(
+      htmlContent.map(async (item) => {
+        const url = `${item.fetchUrl}`;
 
-              {/* 刪除按鈕 */}
-              <button
-                variant="secondary"
-                size="sm"
-                className="h-8 rounded-full bg-gray-500 px-4 text-xs font-medium text-white hover:bg-gray-600 flex items-center justify-center"
-                onClick={() => handleDeleteTransactionRec(item._id)} // 對應刪除邏輯
-              >
-                <span className="material-icons">delete</span>
-              </button>
-            </div>
-          </div>
-        )
+        try {
+          const response = await fetch(url, {
+            method: "GET", // HTTP 方法，這裡使用 GET
+            headers: {
+              "Content-Type": "application/json", // 請求的內容類型為 JSON
+            },
+          });
+
+          if (response) {
+            const data = await response.json(); // 將回應轉換為 JSON 格式
+            //console.log("Fetched Data:", data); // 印出接收到的資料
+            item.detailContent = data; // 將資料儲存到 item
+            return item; // 回傳更新後的 item
+          } else {
+            console.error(`Failed to fetch. Status: ${response.status}`);
+          }
+        } catch (error) {
+          console.error("Error occurred while fetching data:", error);
+        }
+
+        item.detailContent = null; // 如果請求失敗，將 detailContent 設為 null
+        return item; // 回傳未更新的 item
+      })
     );
+
+    console.log("Final HTML Content with Data:", finalHtmlContent);
+    return finalHtmlContent; // 返回包含完整資料的陣列
   };
+
+  useEffect(() => {
+    // 呼叫函數以發送請求
+    fetchData().then((results) => {
+      sethtmlContentData(results); // 確認請求的結果
+    });
+  }, []);
 
   return (
     <div className="rounded-lg border border-gray-800 bg-white p-6 shadow-sm">
       <h2 className="mb-4 text-xl font-semibold text-gray-800">Paid</h2>
-      <div className="border-t border-gray-200 pt-4">{renderHtml()}</div>
+      <div className="border-t border-gray-200 pt-4">
+        {/* 確保 htmlContentData 有資料並進行遍歷 */}
+
+        {htmlContentData &&
+          htmlContentData.map(
+            (item, index) =>
+              item.status === "Paid" ? ( // 檢查 status
+                <div key={index} className="text-gray-800">
+                  <div
+                    className="flex items-center justify-between py-3"
+                    key={item._id}
+                  >
+                    {/* 顯示課程類型 */}
+                    <div className="text-sm font-medium text-gray-600">
+                      <span className="text-sm text-gray-800 mr-3 ml-5">
+                        {item.type}
+                      </span>
+                      <span className="text-sm text-gray-800 mr-3 ml-5">
+                        {item.detailContent.data[0].roomType}
+                      </span>
+                      {item.detailContent.data[0].code}
+                      <span className="text-sm text-gray-800 mr-3 ml-5">
+                        {item.detailContent.data[0].style}
+                        {item.detailContent.data[0].timeRange}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      {/* 顯示課程價格 */}
+                      <span className="text-sm text-gray-800">
+                        HK${item.price}
+                      </span>
+
+                      {/* 刪除按鈕 */}
+                      <button
+                        variant="secondary"
+                        size="sm"
+                        className="h-8 rounded-full bg-gray-500 px-4 text-xs font-medium text-white hover:bg-gray-600 flex items-center justify-center"
+                        onClick={() => {
+                          handleDelete(item._id);
+                        }}
+                      >
+                        <span className="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : null // 如果條件不符合，什麼都不渲染
+          )}
+      </div>
     </div>
   );
 }
